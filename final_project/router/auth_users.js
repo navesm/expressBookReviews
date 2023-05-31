@@ -15,7 +15,17 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
+  const {username, password} = req.body;
+  const user = users.find(user => user.username === username);
+  if (!user) {
+      return res.status(401).send('Invalid username or password');
+  }
+  if(!password) {
+      return res.status(401).send('Invalid username or password');
+  }
+  const token = jwt.sign({username}, 'secret');
+  res.json({token});
+  res.send('User logged in!')
   return res.status(300).json({message: "Yet to be implemented"});
 });
 
