@@ -6,7 +6,16 @@ const public_users = express.Router();
 
 
 public_users.post("/register", (req,res) => {
-  //Write your code here
+  const {username, password} = req.body;
+  if(!username || !password) {
+      return res.status(400).send("Username and password are required");
+  }
+  if (users.find(user => user.username === username)) {
+      return res.status(409).send('Username already exists');
+  }
+  const newUser = {username, password};
+  users.push(newUser);
+  res.send('User registered successfully!');
   return res.status(300).json({message: "Yet to be implemented"});
 });
 
@@ -49,12 +58,18 @@ public_users.get('/title/:title',function (req, res) {
 public_users.get('/review/:isbn',function (req, res) {
   //Write your code here
   let isbn = req.params.isbn;
-  let reviews = req.params.reviews;
-  let booksKeys = Object.keys(books);
-  let filteredBooksByIsbn = booksKeys.map(key =>
+  let bookKeys = Object.keys(books);
+  const book = bookKeys.map(key =>
     books[key]).filter(book => book.isbn === isbn);
-  res.send(filteredBooksByIsbn[reviews])
-  return res.status(300).json({message: "Yet to be implemented"});
+  if (!book) {
+      return res.status(404).send('Book not found');
+  }
+  const reviews = book.reviews;
+  if(!reviews || reviews.length === 0) {
+      return res.send("No reviews for this book yet.")
+  }
+ res.send(reviews);
+  return res.status(200).json({message: "Here are the reviews for that ISBN"});
 });
 
 module.exports.general = public_users;
