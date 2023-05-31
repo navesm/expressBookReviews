@@ -43,10 +43,41 @@ regd_users.post("/login", (req,res) => {
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  let review = req.params.review;
+    const username = req.session.authorization.username;
+    const isbn = req.params.isbn;
+    const review = req.query.review;
   
-  return res.status(300).json({message: "Yet to be implemented"});
+    let booksKeys = Object.keys(books);
+    // Find the book in the books database
+    let bookIndex = booksKeys.map(key => books[key]).filter((book) => book.isbn === isbn);
+    console.log(bookIndex);
+  
+    // If the book exists
+    if (bookIndex !== -1) {
+      const book = books[bookIndex];
+  
+      // Find the existing review for the same user
+      const existingReviewIndex = book.reviews.findIndex(
+        (review) => review.username === username
+      );
+  
+      // If the user has already reviewed this book, update the existing review
+      if (existingReviewIndex !== -1) {
+        book.reviews[existingReviewIndex].review = review;
+      } else {
+        // If the user has not reviewed this book, add a new review
+        const newReview = {
+          username: username,
+          review: review,
+        };
+        book.reviews.push(newReview);
+      }
+  
+      return res.status(200).json({ message: "Review added/modified successfully" });
+    } else {
+      return res.status(404).json({ message: "Book not found" });
+    }
+  
 });
 
 module.exports.authenticated = regd_users;
