@@ -15,7 +15,7 @@ public_users.post("/register", (req,res) => {
   }
   const newUser = {username, password};
   users.push(newUser);
-  res.send('User registered successfully!');
+  res.status(200).send('User registered successfully!');
   return res.status(300).json({message: "Yet to be implemented"});
 });
 
