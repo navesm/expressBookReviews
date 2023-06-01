@@ -21,15 +21,27 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books, null, 4));
-  return res.status(300).json({message: "Here is the list of available books!"});
+    new Promise((resolve, reject) => {
+        resolve(JSON.stringify(books, null, 4));
+      })
+        .then((bookList) => {
+          return res.send(bookList);
+          res.status(200).json({ message: "Here is the list of available books!" });
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(500).json({ message: "Failed to fetch book list" });
+        });
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
   let isbn = req.params.isbn;
-  res.send(books[isbn]);
-  return res.status(200).json({message: "Here are the books by ISBN"});
+  new Promise((resolve, reject) => {
+      resolve(isbn)
+  }).then((book) =>{
+     return res.send(books[isbn]);
+  })
  });
   
 // Get book details based on author
