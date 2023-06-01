@@ -16,7 +16,6 @@ public_users.post("/register", (req,res) => {
   const newUser = {username, password};
   users.push(newUser);
   res.status(200).send('User registered successfully!');
-  return res.status(300).json({message: "Yet to be implemented"});
 });
 
 // Get the book list available in the shop
@@ -26,7 +25,6 @@ public_users.get('/',function (req, res) {
       })
         .then((bookList) => {
           return res.send(bookList);
-          res.status(200).json({ message: "Here is the list of available books!" });
         })
         .catch((error) => {
           console.error(error);
@@ -41,7 +39,9 @@ public_users.get('/isbn/:isbn',function (req, res) {
       resolve(isbn)
   }).then((book) =>{
      return res.send(books[isbn]);
-  })
+  }).catch(error => {
+      console.error(error);
+  });
  });
   
 // Get book details based on author
@@ -51,8 +51,17 @@ public_users.get('/author/:author',function (req, res) {
   let booksKeys = Object.keys(books);
   let filteredBooks = booksKeys.map(key =>
     books[key]).filter(book => book.author === author);
-  res.send(filteredBooks);
-  return res.status(200).json({message: "Here are the books by that author"});
+    new Promise((resolve, reject) => {
+        resolve(filteredBooks);
+      })
+        .then(filteredBooks => {
+          res.send(filteredBooks);
+        })
+        .catch(error => {
+          // Handle any potential errors here
+          console.error(error);
+          res.status(500).send('An error occurred');
+        });
 });
 
 // Get all books based on title
@@ -62,8 +71,14 @@ public_users.get('/title/:title',function (req, res) {
   let booksKeys = Object.keys(books);
   let filteredBooksByTitle = booksKeys.map(key =>
     books[key]).filter(book => book.title === title);
-  res.send(filteredBooksByTitle);
-  return res.status(200).json({message:"Here is the title you requested"});
+  new Promise((resolve, reject) => {
+      resolve(filteredBooksByTitle);
+  }).then(filteredBooksByTitle => {
+      res.send(filteredBooksByTitle);
+  }).catch(error => {
+      console.error(error);
+      return res.status(500).json({message:"Could not retrieve that title. Please try again."});
+  })
 });
 
 //  Get book review
