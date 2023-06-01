@@ -47,30 +47,20 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const review = req.query.review;
   
-    let booksKeys = Object.keys(books);
     // Find the book in the books database
-    let bookIndex = booksKeys.map(key => books[key]).filter((book) => book.isbn === isbn);
-    console.log(bookIndex);
+    const book = books[isbn];
   
     // If the book exists
-    if (bookIndex !== -1) {
-      const book = books[bookIndex];
-  
+    if (book) {
       // Find the existing review for the same user
-      const existingReviewIndex = book.reviews.findIndex(
-        (review) => review.username === username
-      );
+      const existingReview = book.reviews[username];
   
       // If the user has already reviewed this book, update the existing review
-      if (existingReviewIndex !== -1) {
-        book.reviews[existingReviewIndex].review = review;
+      if (existingReview) {
+        book.reviews[username] = review;
       } else {
         // If the user has not reviewed this book, add a new review
-        const newReview = {
-          username: username,
-          review: review,
-        };
-        book.reviews.push(newReview);
+        book.reviews[username] = review;
       }
   
       return res.status(200).json({ message: "Review added/modified successfully" });
@@ -78,6 +68,28 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
   
+});
+
+regd_users.delete("/auth/review/:isbn", (req,res) => {
+    const username = req.session.authorization.username;
+    const isbn = req.params.isbn;
+  
+    // Find the book in the books database
+    const book = books[isbn];
+  
+    // If the book exists
+    if (book) {
+      // Check if the user has a review for this book
+      if (book.reviews.hasOwnProperty(username)) {
+        // Delete the user's review
+        delete book.reviews[username];
+        return res.status(200).json({ message: "Review deleted successfully" });
+      } else {
+        return res.status(404).json({ message: "Review not found for the given user" });
+      }
+    } else {
+      return res.status(404).json({ message: "Book not found" });
+    }
 });
 
 module.exports.authenticated = regd_users;
